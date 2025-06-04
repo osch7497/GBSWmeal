@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>오늘 경소고 급식</title>
+    </head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .mealDisplay{
+            background-color: rgb(255, 255, 255);
+            color: rgb(0, 0, 0);
+            border-radius: 5px;
+            width: 50%;
+            padding: 10px 40px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.237);
+            transition: 0.1s;
+            font-size: 20px;
+            margin: 0px auto 10px;
+        }
+        .mealDisplay:hover{
+            scale: 1.1;
+            transition: 0.2s;
+        }
+        ul{
+            list-style: none;
+        }
+        li{
+            float: left;
+            padding: 0px 10px;
+        }
+        a:hover{
+                color: darkgray;
+                font-size: 22px;
+        }
+        a{
+            color:rgb(0, 0, 0);
+            font-size: 20px;
+            text-decoration-line: none;
+            transition: all 0.2s ease;
+        }
+        .select{
+            padding: 10px 20px;
+            font-size: 20px;
+            border: none;
+        
+        }
+        button:hover{
+            scale: 1.1;
+        }
+        button:active{
+            scale: 0.9;
+        }
+        #select_buttons{
+            text-align: center;
+            border-radius: 5px;
+        }
+        nav{
+            padding: 40px 0px;
+            background-color:rgb(255, 255, 255);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            transition: 0.3s;
+        }
+        .fakebutton, #alli{
+            color: red;
+            font-size: 15px;
+        }
+        .albutton{
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin: 0px 0px 0px 4px;
+        }
+        #aldetected{
+            background-color: red;
+            color: white;
+        }
+    </style>
+    <body>
+        <nav class="navigation-bar">
+            <ul>
+                <li style="font-size: 20px;"><a href="http://경소마고.메인.한국">GBSW</a></li>
+                <li class="nav-text"><a href="http://급식.경소마고.메인.한국">급식 보러가기</a></li>
+                <li class="nav-text"><a href="http://시간표.경소마고.메인.한국">시간표 </a></li>
+            </ul>
+            <br>
+        </nav>
+        <h1 id="date" style="text-align: center;font-size: 20px;"><br>로딩중..</h1>
+        <!-- <input type='date' id='currnetDate'></input>
+        <button type='submit' id='deploy'>확인하기</button> -->
+        <h1 id="display_ck"></h1>
+        <h1 style="text-align: center;">경소고 급식</h1>
+        <div id="select_buttons">
+            <button id="morning" class="select">조식</button>
+            <button id="lunch" class="select">중식</button>
+            <button id="dinner" class="select">석식</button>
+        </div>
+        <div id="displays">
+        </div>
+        <div id="check_al" style="text-align: center;">
+            <h1 style="text-align: center;">알레르기 성분 저장</h1>
+            <p style="text-align: center; color: tomato">등록된 알레르기 목록</p>
+            <div id="alli"></div>
+            <details id="ch_grouper"><summary>알레르기 선택하기</summary></details>
+        </div>
+        <p style="text-align: center; font-size: 24px; color:gray;">made by <a href="https://solved.ac/profile/osch7497" style="text-decoration: none; color: aqua;">귀여운 크리쳐</a></p>       
+    </body>
+    <script>
+        var allage = ['난류','우유','메밀','땅콩','대두','밀','고등어','게','새우','돼지고기','복숭아','토마토','아황산류','호두','닭고기','쇠고기','오징어','조개류','굴','홍합','전복','잣'];
+        var hasal = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+        for(let i = 1; i <= allage.length; i++){
+            ch_grouper.innerHTML += `<span id="chbg"><input type="checkbox" id="alck${i}" value="${i}">${allage[i-1]}</span>`;
+            if(i%5==0)
+            ch_grouper.innerHTML += `<br>`
+        }
+        ch_grouper.innerHTML += `<br><br><button id="saveal" value="저장하기">저장하기</button>`;
+        document.cookie = "message = 어차피 여기 쿠키 변조해서 할거 없음ㅋㅋㅋ";
+        if(localStorage.getItem("allage") != null){
+            hasal = JSON.parse(localStorage.getItem("allage"));
+        }
+        else{
+            localStorage.setItem("allage", JSON.stringify(hasal));
+        }
+        var c = false;
+        for(let i = 1; i <= allage.length; i++){
+            if(hasal[i]){
+                c = true;
+                document.getElementById(`alck${i}`).checked = true;
+                alli.innerHTML += `<label class="alcircle"> ${allage[i-1]} </label>`;
+            }
+        }
+        if(!c)
+            alli.innerHTML += `<label class="alcircle">당신은 알레르기 성분이 없습니다! </label>`;
+        var display = document.getElementById("displays"); // 첫 번째 요소 선택
+        var morning = document.getElementById("morning");
+        var today = new Date();
+        var year = today.getFullYear();
+        var month = today.getMonth()+1;
+        month = String(month).padStart(2, "0");
+        var day = today.getDate();
+        day = String(day).padStart(2, "0")
+        today = Number(year+month+day)
+        console.log(`${year}년 ${String(month).padStart(2, "0")}월 ${String(day).padStart(2, "0")}일`);
+        console.log(today);
+        var meals = [];
+        function find_meal(date){
+            fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?ATPT_OFCDC_SC_CODE=R10&SD_SCHUL_CODE=8750829&MLSV_YMD=${today}&Type=Json`)
+                .then((response) => {
+                if (response.ok) {
+                    return response.json(); // JSON 데이터로 변환
+                } else {
+                    console.log("response error:", response.status);
+                    display.innerHTML += `급식표를 불러오지 못했습니다...`;
+                    throw new Error("network error");
+                }
+                })
+                .then((data) => {
+                    console.log("response data:", data);
+                    document.getElementById("date").innerHTML = `<h1 style="text-align: center;font-size: 20px;">${year}년 ${month}월 ${day}일<br></h1>`;
+                    var arr = ["조식","중식","석식"]
+                    var allages = [];
+                    var meals = [];
+                    var boxcnt = 0;
+                    for(let i = 0; i < 3; i++){
+                        display.innerHTML += `<div id="box${i}"></div>`
+                        var localDisplay = document.getElementById(`box${i}`);
+                        console.log(localDisplay)
+                        allages[i] = data.mealServiceDietInfo[1].row[i].DDISH_NM.split("<br/>")
+                        meals[i] = data.mealServiceDietInfo[1].row[i].DDISH_NM.split("<br/>")
+                        for(let ii = 0; ii < allages[i].length; ii++){
+                            meals[i][ii] = allages[i][ii].split(" ")[0];
+                            allages[i][ii] = allages[i][ii].split(" ");
+                            allages[i][ii] = allages[i][ii][1].split(".");
+                            allages[i][ii][0] = allages[i][ii][0].substr(1); 
+                            let max = allages[i][ii].length-1;
+                            if(allages[i][ii][max] == ""){
+                                allages[i][ii][max] = "등록된 알레르기 성분이 없어요!"
+                            }
+                            else{
+                                allages[i][ii][max] = allages[i][ii][max].substr(0,allages[i][ii][max].length-1);
+                            }
+                            localDisplay.innerHTML += `<div id="mealDisplay${boxcnt}" class="mealDisplay">${meals[i][ii]}<br></div>`;
+                            let localDiv = document.getElementById(`mealDisplay${boxcnt}`);
+                            for(let t = 0; t < allages[i][ii].length; t++){
+                                if(allages[i][ii][t] == "등록된 알레르기 성분이 없어요!"){
+                                    localDiv.innerHTML += `<label class="fakebutton">${allages[i][ii][t]}</label>`;
+                                }
+                                else{
+                                    if(hasal[allages[i][ii][t]]){
+                                        localDiv.style.backgroundColor = `tomato`;
+                                        localDiv.style.color = `white`;
+                                        localDiv.innerHTML += `<button class="albutton" id="aldetected">${allages[i][ii][t]}</button>`;
+                                    }
+                                    else{
+                                        localDiv.innerHTML += `<button class="albutton">${allages[i][ii][t]}</button>`
+                                    }
+                                }
+                            }
+                            boxcnt++;
+                        }
+                        console.log(allages);
+                        localDisplay.style.display = "none";
+                    }
+                    var hour = new Date().getHours();
+                    if(hour > 0&&hour <= 9){
+                        var box = document.getElementById("box0");
+                        box.style.display = 'block';
+                        morning.style.backgroundColor = 'rgb(155, 155, 155)';
+                    }
+                    else if(hour > 9&&hour <= 15){
+                        var box = document.getElementById("box1");
+                        box.style.display = 'block';
+                        lunch.style.backgroundColor = 'rgb(155, 155, 155)';
+                    }
+                    else if(hour > 15&&hour <= 24){
+                        var box = document.getElementById("box2");
+                        box.style.display = 'block';
+                        dinner.style.backgroundColor = 'rgb(155, 155, 155)';
+                    }
+                    
+                })
+                .catch((error) => console.log("error:", error));
+
+        }
+        find_meal(today)
+        console.log("test:",morning);
+        morning.addEventListener("click", function() {
+            var box0 = document.getElementById("box0");
+            var box1 = document.getElementById("box1");
+            var box2 = document.getElementById("box2");
+            box0.style.display = 'block';
+            box1.style.display = 'none';
+            box2.style.display = 'none';
+            morning.style.backgroundColor = 'rgb(155, 155, 155)';
+            lunch.style.backgroundColor = 'rgb(255, 255, 255)';
+            dinner.style.backgroundColor = 'rgb(255, 255, 255)';
+        });
+        lunch.addEventListener("click", function() {
+            var box0 = document.getElementById("box0");
+            var box1 = document.getElementById("box1");
+            var box2 = document.getElementById("box2");
+            box0.style.display = 'none';
+            box1.style.display = 'block';
+            box2.style.display = 'none';
+            morning.style.backgroundColor = 'rgb(255, 255, 255)';
+            lunch.style.backgroundColor = 'rgb(155, 155, 155)';
+            dinner.style.backgroundColor = 'rgb(255, 255, 255)';
+        });
+        dinner.addEventListener("click", function() {
+            var box0 = document.getElementById("box0");
+            var box1 = document.getElementById("box1");
+            var box2 = document.getElementById("box2");
+            box0.style.display = 'none';
+            box1.style.display = 'none';
+            box2.style.display = 'block';
+            morning.style.backgroundColor = 'rgb(255, 255, 255)';
+            lunch.style.backgroundColor = 'rgb(255, 255, 255)';
+            dinner.style.backgroundColor = 'rgb(155, 155, 155)';
+        });
+        saveal.addEventListener("click",function(){
+            for(let i = 1; i <= allage.length; i++){
+                if(document.getElementById(`alck${i}`).checked){
+                    hasal[i] = true;
+                }
+                else{
+                    hasal[i] = false;
+                }
+            }
+            console.log(hasal);
+            localStorage.setItem("allage", JSON.stringify(hasal));
+            document.getElementById("display_ck").innerHTML = `<h1 style="text-align: center;font-size: 20px;">${hasal}</h1>`;
+            location.reload()
+        })
+    </script>
+    
+</html>
